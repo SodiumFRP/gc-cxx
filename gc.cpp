@@ -85,7 +85,7 @@ static void possible_root(Node* s) {
         if (!s->buffered) {
             s->buffered = true;
             with_ctx_void([s](Ctx& ctx) {
-                if (std::find(ctx.roots.begin(), ctx.roots.end(), s) != ctx.roots.end()) {
+                if (std::find(ctx.roots.begin(), ctx.roots.end(), s) == ctx.roots.end()) {
                     ctx.roots.push_back(s);
                 }
             });
