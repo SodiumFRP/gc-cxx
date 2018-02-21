@@ -68,7 +68,7 @@ static void release(Node* s) {
 }
 
 static void system_free(Node* s) {
-    assert(s->strong == 0 && s->weak > 1);
+    assert(s->strong == 0 && s->weak > 0);
     s->cleanup();
     if (s->weak > 0) {
         --s->weak;

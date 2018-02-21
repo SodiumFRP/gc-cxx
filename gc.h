@@ -82,8 +82,8 @@ public:
         this->_node = node;
     }
 
-    Gc(A&& value) {
-        A* value2 = new A(value);
+    Gc(A* value) {
+        A* value2 = value;
         this->_value = value2;
         auto cleanup = [value2]() {
             delete value2;
@@ -109,11 +109,11 @@ public:
     }
 
     A& value() {
-        return &*_value;
+        return *_value;
     }
 
     const A& value() const {
-        return &*_value;
+        return *_value;
     }
 
     int strong_count() const {
