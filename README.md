@@ -8,7 +8,7 @@ DAVID F. BACON, CLEMENT R. ATTANASIO, V.T. RAJAN, STEPHEN E. SMITH
 
 ## Example
 
-https://github.com/clinuxrulz/gc-cxx/blob/master/example.cpp
+https://github.com/SodiumFRP/gc-cxx/blob/master/example.cpp
 
 ## Build
 
