@@ -2,7 +2,7 @@ cmake_minimum_required( VERSION 2.8 )
 
 set( CMAKE_INSTALL_PREFIX /usr/local )
 
-project(gc)
+project(bacon_gc)
 include(CheckCXXCompilerFlag)
 
 check_cxx_compiler_flag("-std=c++11" SUPPORTS_CXX11)
@@ -14,52 +14,52 @@ else()
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
     else()
         message("C++11 is not supported")
-        add_definitions(-DGC_NO_CXX11)
+        add_definitions(-DBACON_GC_NO_CXX11)
     endif()
 endif()
 
 
-set( GC_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/gc )
+set( BACON_GC_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bacon_gc )
 
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
 find_package( Boost REQUIRED )
 
 file( GLOB_RECURSE 
-    GC_INCLUDE_FILES 
-    ${GC_BASE_DIR}/*.h
+    BACON_GC_INCLUDE_FILES 
+    ${BACON_GC_BASE_DIR}/*.h
     )
 
 file( GLOB_RECURSE 
-    GC_SOURCE_FILES
-    ${GC_BASE_DIR}/*.cpp
+    BACON_GC_SOURCE_FILES
+    ${BACON_GC_BASE_DIR}/*.cpp
     )
 
 file(
-    COPY ${GC_INCLUDE_FILES} 
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include/gc
+    COPY ${BACON_GC_INCLUDE_FILES} 
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include/bacon_gc
     )
 
 include_directories( ${Boost_INCLUDE_DIR} )
 
-set( ALL_SOURCES ${GC_INCLUDE_FILES} ${GC_SOURCE_FILES} )
+set( ALL_SOURCES ${BACON_GC_INCLUDE_FILES} ${BACON_GC_SOURCE_FILES} )
 
-add_library( gc SHARED ${ALL_SOURCES} )
-add_library( libgc STATIC ${ALL_SOURCES} )
+add_library( bacon_gc SHARED ${ALL_SOURCES} )
+add_library( libbacon_gc STATIC ${ALL_SOURCES} )
 
-set_target_properties( libgc PROPERTIES OUTPUT_NAME gc )
+set_target_properties( libbacon_gc PROPERTIES OUTPUT_NAME bacon_gc )
 
 # INSTALL
 # -------
 
 install (
-    TARGETS gc libgc
+    TARGETS bacon_gc libbacon_gc
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     )
 
 # Install header files
 install (
-    FILES ${GC_INCLUDE_FILES}
-    DESTINATION include/gc
+    FILES ${BACON_GC_INCLUDE_FILES}
+    DESTINATION include/bacon_gc
     )
