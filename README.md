@@ -12,5 +12,7 @@ https://github.com/clinuxrulz/gc-cxx/blob/master/example.cpp
 
 ## Build
 
-    g++ -c -std=c++17 gc.cpp
-
+    mkdir build
+    cd build
+    cmake ..
+    make
