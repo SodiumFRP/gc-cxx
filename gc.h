@@ -1,3 +1,5 @@
+#ifndef _SODIUM_GC_H_
+#define _SODIUM_GC_H_
 
 /*
  * A Pure Reference Counting Garbage Collector
@@ -8,7 +10,7 @@
 #include <functional>
 #include <utility>
 #include <vector>
-#include <experimental/optional>
+#include <boost/optional.hpp>
 
 enum Colour {
     Black,
@@ -77,6 +79,8 @@ class GcWeak;
 template <class A>
 class Gc {
 public:
+    Gc(): Gc(NULL) {}
+
     Gc(A* value, Node* node) {
         this->_value = value;
         this->_node = node;
@@ -86,12 +90,16 @@ public:
         A* value2 = value;
         this->_value = value2;
         auto cleanup = [value2]() {
-            delete value2;
+            if (value2 != NULL) {
+                delete value2;
+            }
         };
         A* value3 = this->_value;
         this->_node = new_gc_node(
             [value3](std::function<void(Node*)> k) {
-                Trace<A>::trace(*value3, k);
+                if (value3 != NULL) {
+                    Trace<A>::trace(*value3, k);
+                }
             },
             cleanup
         );
@@ -108,8 +116,20 @@ public:
         collect_cycles();
     }
 
+    A& operator*() const {
+        return *_value;
+    }
+
+    A* operator->() const {
+        return _value;
+    }
+
     A& value() {
         return *_value;
+    }
+
+    operator bool() const {
+        return _value != NULL;
     }
 
     const A& value() const {
@@ -122,6 +142,10 @@ public:
 
     int weak_count() const {
         return _node->weak;
+    }
+
+    A* get() const {
+        return _value;
     }
 
     Node* __node() const {
@@ -137,9 +161,9 @@ public:
     }
 
     template <class B>
-    Gc<B>&& upcast() const {
-        ++_node->strong;
-        return Gc<B>(_node, (B*)_value);
+    Gc<B> static_cast_() const {
+        increment(this->_node);
+        return Gc<B>((B*)_value, _node);
     }
 
 private:
@@ -153,14 +177,14 @@ public:
     GcWeak(const Gc<A>& gc) {
         Node* node = gc.__node();
         ++node->weak;
-        this->_node = node;
         this->_value = gc.__value();
+        this->_node = node;
     }
 
     GcWeak(const GcWeak<A>& gc) {
-        ++gc.node->weak;
-        this->_node = gc._node;
+        ++gc._node->weak;
         this->_value = gc._value;
+        this->_node = gc._node;
     }
 
     ~GcWeak() {
@@ -172,15 +196,21 @@ public:
         }
     }
 
-    std::experimental::optional<Gc<A> > upgrade() {
+    Gc<A> lock() const {
+        return upgrade().value_or(Gc<A>());
+    }
+
+    boost::optional<Gc<A> > upgrade() const {
         if (_node->strong == 0) {
             return {};
         } else {
             ++_node->strong;
-            return Gc<A>(_node, _value);
+            return Gc<A>(_value, _node);
         }
     }
 private:
-    Node* _node;
     A* _value;
+    Node* _node;
 };
+
+#endif
