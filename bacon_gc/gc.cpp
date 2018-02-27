@@ -97,8 +97,7 @@ namespace bacon_gc {
         if (s->weak > 0) {
             --s->weak;
             if (s->weak == 0) {
-                // FIXME: Uncommenting this line causes a crash later on. Figure out why.
-                //delete s;
+                delete s;
             }
         }
     }
