@@ -10,6 +10,7 @@ namespace bacon_gc {
     struct Ctx {
         std::vector<Node*> roots;
         bool collecting_cycles;
+        std::vector<Node*> to_be_freed;
     };
 
     static Ctx ctx;
@@ -29,7 +30,7 @@ namespace bacon_gc {
 
     static void release(Node* s);
     static void possible_root(Node* s);
-    static void system_free(Node* s);
+    static void deferred_free(Node* s);
     static void mark_roots();
     static void scan_roots();
     static void collect_roots();
@@ -61,12 +62,33 @@ namespace bacon_gc {
         }
     }
 
+    void increment_weak(Node* s) {
+        ++s->weak;
+    }
+
+    void decrement_weak(Node* s) {
+        if (s->weak > 0) {
+            --s->weak;
+            if (s->weak == 0) {
+                release(s);
+            }
+        }
+    }
+
+    static void system_free(Node* s);
+
     static void release(Node* s) {
         assert(s->strong == 0);
         s->colour = Colour::Black;
         if (!s->buffered) {
-            system_free(s);
+            deferred_free(s);
         }
+    }
+
+    static void deferred_free(Node* s) {
+        with_ctx_void([s](Ctx& ctx) {
+            ctx.to_be_freed.push_back(s);
+        });
     }
 
     static void system_free(Node* s) {
@@ -75,7 +97,8 @@ namespace bacon_gc {
         if (s->weak > 0) {
             --s->weak;
             if (s->weak == 0) {
-                delete s;
+                // FIXME: Uncommenting this line causes a crash later on. Figure out why.
+                //delete s;
             }
         }
     }
@@ -111,6 +134,18 @@ namespace bacon_gc {
         scan_roots();
         collect_roots();
 
+        std::vector<Node*> to_be_freed;
+        with_ctx_void([&to_be_freed](Ctx& ctx) {
+            to_be_freed.insert(to_be_freed.end(), ctx.to_be_freed.begin(), ctx.to_be_freed.end());
+            ctx.to_be_freed.clear();
+        });
+        for (std::vector<Node*>::iterator it = to_be_freed.begin(); it != to_be_freed.end(); ++it) {
+            (*it)->finalize();
+        }
+        for (std::vector<Node*>::iterator it = to_be_freed.begin(); it != to_be_freed.end(); ++it) {
+            system_free(*it);
+        }
+
         with_ctx_void([](Ctx& ctx) {
             ctx.collecting_cycles = false;
         });
@@ -127,7 +162,7 @@ namespace bacon_gc {
             } else {
                 s->buffered = false;
                 if (s->colour == Colour::Black && s->strong == 0) {
-                    system_free(s);
+                    deferred_free(s);
                 }
             }
         }
@@ -193,7 +228,7 @@ namespace bacon_gc {
             trace_node(s, [](Node* t) {
                 collect_white(t);
             });
-            system_free(s);
+            deferred_free(s);
         }
     }
 

@@ -27,17 +27,19 @@ namespace bacon_gc {
         Colour colour;
         bool buffered;
         std::function<void(std::function<void(Node*)>)> trace_;
+        std::function<void()> finalize;
         std::function<void()> cleanup;
     };
 
-    template<class TF, class CF>
-    Node* new_gc_node(TF tf, CF cf) {
+    template<class TF, class FF, class CF>
+    Node* new_gc_node(TF tf, FF ff, CF cf) {
         Node* node = new Node;
         node->strong = 1;
         node->weak = 1;
         node->colour = Colour::Black;
         node->buffered = false;
         node->trace_ = std::function<void(std::function<void(Node*)>)>(tf);
+        node->finalize = std::function<void()>(ff);
         node->cleanup = std::function<void()>(cf);
         return node;
     }
@@ -45,6 +47,10 @@ namespace bacon_gc {
     void increment(Node* s);
 
     void decrement(Node* s);
+
+    void increment_weak(Node* s);
+
+    void decrement_weak(Node* s);
 
     void collect_cycles();
 
@@ -55,6 +61,14 @@ namespace bacon_gc {
     struct Trace {
         template <typename F>
         static void trace(const A& a, F&& k);
+    };
+
+    template <typename A>
+    struct Finalize {
+        static void finalize(A& a) {
+            // Your allowed to not have a finalizer if you want to,
+            // so a default empty implementation is here.
+        }
     };
 
     template <typename A>
@@ -89,20 +103,24 @@ namespace bacon_gc {
         }
 
         Gc(A* value) {
-            A* value2 = value;
-            this->_value = value2;
-            auto cleanup = [value2]() {
-                if (value2 != NULL) {
-                    delete value2;
+            this->_value = value;
+            auto cleanup = [value]() {
+                if (value != NULL) {
+                    delete value;
                 }
             };
-            A* value3 = this->_value;
+            auto finalize = [value]() {
+                if (value != NULL) {
+                    Finalize<A>::finalize(*value);
+                }
+            };
             this->_node = new_gc_node(
-                [value3](std::function<void(Node*)> k) {
-                    if (value3 != NULL) {
-                        Trace<A>::trace(*value3, k);
+                [value](std::function<void(Node*)> k) {
+                    if (value != NULL) {
+                        Trace<A>::trace(*value, k);
                     }
                 },
+                finalize,
                 cleanup
             );
         }
@@ -178,7 +196,7 @@ namespace bacon_gc {
     public:
         GcWeak(const Gc<A>& gc) {
             Node* node = gc.__node();
-            ++node->weak;
+            increment_weak(node);
             this->_value = gc.__value();
             this->_node = node;
         }
@@ -190,12 +208,7 @@ namespace bacon_gc {
         }
 
         ~GcWeak() {
-            if (_node->weak > 0) {
-                --_node->weak;
-                if (_node->weak == 0) {
-                    delete _node;
-                }
-            }
+            decrement_weak(_node);
         }
 
         Gc<A> lock() const {
