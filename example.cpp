@@ -4,6 +4,7 @@
 
 using namespace std;
 using namespace std::experimental;
+using namespace bacon_gc;
 
 static int my_obj_1_count = 0;
 
@@ -19,15 +20,17 @@ struct MyObj1 {
     }
 };
 
-template <>
-struct Trace<MyObj1> {
-    template <typename F>
-    static void trace(const MyObj1& a, F&& k) {
-        if (a.next) {
-            k(a.next.value().__node());
+namespace bacon_gc {
+    template <>
+    struct Trace<MyObj1> {
+        template <typename F>
+        static void trace(const MyObj1& a, F&& k) {
+            if (a.next) {
+                k(a.next.value().__node());
+            }
         }
-    }
-};
+    };
+}
 
 void example1() {
     {

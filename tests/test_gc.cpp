@@ -9,6 +9,7 @@
 
 using namespace std;
 using namespace boost;
+using namespace bacon_gc;
 
 void test_sodium::tearDown()
 {
@@ -28,15 +29,17 @@ struct MyObj1 {
     }
 };
 
-template <>
-struct Trace<MyObj1> {
-    template <typename F>
-    static void trace(const MyObj1& a, F&& k) {
-        if (a.next) {
-            k(a.next.value().__node());
+namespace bacon_gc {
+    template <>
+    struct Trace<MyObj1> {
+        template <typename F>
+        static void trace(const MyObj1& a, F&& k) {
+            if (a.next) {
+                k(a.next.value().__node());
+            }
         }
-    }
-};
+    };
+}
 
 void test_sodium::cycle()
 {
