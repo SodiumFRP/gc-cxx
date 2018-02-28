@@ -11,6 +11,7 @@ namespace bacon_gc {
         std::vector<Node*> roots;
         bool collecting_cycles;
         std::vector<Node*> to_be_freed;
+        std::vector<Node*> delete_next_cycle;
     };
 
     static Ctx ctx;
@@ -41,9 +42,7 @@ namespace bacon_gc {
 
     template<class F>
     void trace_node(Node* node, F&& k) {
-        if (node->strong > 0) {
-            node->trace_(std::function<void(Node*)>(k));
-        }
+        node->trace_(std::function<void(Node*)>(k));
     }
 
     void increment(Node* s) {
@@ -70,7 +69,7 @@ namespace bacon_gc {
         if (s->weak > 0) {
             --s->weak;
             if (s->weak == 0) {
-                release(s);
+                deferred_free(s);
             }
         }
     }
@@ -97,7 +96,7 @@ namespace bacon_gc {
         if (s->weak > 0) {
             --s->weak;
             if (s->weak == 0) {
-                delete s;
+                with_ctx_void([s](Ctx& ctx) { ctx.delete_next_cycle.push_back(s); });
             }
         }
     }
@@ -119,6 +118,10 @@ namespace bacon_gc {
 
     void collect_cycles() {
         bool skip = with_ctx<bool>([](Ctx& ctx) {
+            for (std::vector<Node*>::iterator it = ctx.delete_next_cycle.begin(); it != ctx.delete_next_cycle.end(); ++it) {
+                delete *it;
+            }
+            ctx.delete_next_cycle.clear();
             if (ctx.collecting_cycles) {
                 return true;
             }

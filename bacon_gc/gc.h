@@ -132,10 +132,8 @@ namespace bacon_gc {
         }
 
         ~Gc() {
-            if (_node->weak > 0) {
-                decrement(_node);
-                collect_cycles();
-            }
+            decrement(this->_node);
+            collect_cycles();
         }
 
         A& operator*() const {

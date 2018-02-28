@@ -13,6 +13,7 @@ using namespace bacon_gc;
 
 void test_sodium::tearDown()
 {
+    bacon_gc::collect_cycles();
 }
 
 static int my_obj_1_count = 0;
