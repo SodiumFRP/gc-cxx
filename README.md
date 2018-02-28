@@ -6,6 +6,12 @@ Based on the paper:
 > A Pure Reference Counting Garbage Collector
 DAVID F. BACON, CLEMENT R. ATTANASIO, V.T. RAJAN, STEPHEN E. SMITH
 
+## Features
+
+- Strong References
+- Weak References
+- Finalizers
+
 ## Example
 
 https://github.com/SodiumFRP/gc-cxx/blob/master/example.cpp
