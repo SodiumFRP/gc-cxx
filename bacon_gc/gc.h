@@ -136,6 +136,14 @@ namespace bacon_gc {
             collect_cycles();
         }
 
+        Gc& operator=(const Gc<A>& gc) {
+            decrement(this->_node);
+            increment(gc._node);
+            this->_value = gc._value;
+            this->_node = gc._node;
+            return *this;
+        }
+
         A& operator*() const {
             return *_value;
         }
@@ -209,6 +217,15 @@ namespace bacon_gc {
 
         ~GcWeak() {
             decrement_weak(_node);
+        }
+
+
+        GcWeak& operator=(const GcWeak<A>& gc) {
+            decrement_weak(this->_node);
+            increment_weak(gc._node);
+            this->_value = gc._value;
+            this->_node = gc._node;
+            return *this;
         }
 
         Gc<A> lock() const {
