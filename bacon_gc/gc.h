@@ -137,8 +137,8 @@ namespace bacon_gc {
         }
 
         Gc& operator=(const Gc<A>& gc) {
-            decrement(this->_node);
             increment(gc._node);
+            decrement(this->_node);
             this->_value = gc._value;
             this->_node = gc._node;
             return *this;
@@ -221,8 +221,8 @@ namespace bacon_gc {
 
 
         GcWeak& operator=(const GcWeak<A>& gc) {
-            decrement_weak(this->_node);
             increment_weak(gc._node);
+            decrement_weak(this->_node);
             this->_value = gc._value;
             this->_node = gc._node;
             return *this;
