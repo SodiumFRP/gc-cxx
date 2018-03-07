@@ -136,7 +136,7 @@ namespace bacon_gc {
             collect_cycles();
         }
 
-        Gc& operator=(const Gc<A>& gc) {
+        Gc<A>& operator=(const Gc<A>& gc) {
             increment(gc._node);
             decrement(this->_node);
             this->_value = gc._value;
@@ -220,7 +220,7 @@ namespace bacon_gc {
         }
 
 
-        GcWeak& operator=(const GcWeak<A>& gc) {
+        GcWeak<A>& operator=(const GcWeak<A>& gc) {
             increment_weak(gc._node);
             decrement_weak(this->_node);
             this->_value = gc._value;
