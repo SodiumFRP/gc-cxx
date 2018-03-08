@@ -83,9 +83,9 @@ void test_sodium::cycle()
         Gc<MyObj1> a(new MyObj1());
         Gc<MyObj1> b(new MyObj1());
         Gc<MyObj1> c(new MyObj1());
-        a.value().next = b;
-        b.value().next = c;
-        c.value().next = a;
+        a->next = b;
+        b->next = c;
+        c->next = a;
     }
     CPPUNIT_ASSERT(my_obj_1_count == 0);
 }
@@ -96,9 +96,9 @@ void test_sodium::finalize()
         Gc<MyObj2> a(new MyObj2());
         Gc<MyObj2> b(new MyObj2());
         Gc<MyObj2> c(new MyObj2());
-        a.value().next = b;
-        b.value().next = c;
-        c.value().next = a;
+        a->next = b;
+        b->next = c;
+        c->next = a;
     }
     CPPUNIT_ASSERT(my_obj_2_count == 0 && my_obj_2_finalize_count == 3);
 }

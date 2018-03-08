@@ -35,9 +35,9 @@ void example1() {
         Gc<MyObj1> a(new MyObj1());
         Gc<MyObj1> b(new MyObj1());
         Gc<MyObj1> c(new MyObj1());
-        a.value().next = b;
-        b.value().next = c;
-        c.value().next = a;
+        a->next = b;
+        b->next = c;
+        c->next = a;
         cout << "my_obj_1_count before end of local scope: " << my_obj_1_count << endl;
     }
     cout << "my_obj_1_count after end of local scope: " << my_obj_1_count << endl;
