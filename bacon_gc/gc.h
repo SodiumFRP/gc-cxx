@@ -10,7 +10,6 @@
 #include <functional>
 #include <utility>
 #include <vector>
-#include <boost/optional.hpp>
 
 namespace bacon_gc {
 
@@ -229,12 +228,8 @@ namespace bacon_gc {
         }
 
         Gc<A> lock() const {
-            return upgrade().value_or(Gc<A>());
-        }
-
-        boost::optional<Gc<A> > upgrade() const {
             if (_node->strong == 0) {
-                return {};
+                return Gc<A>();
             } else {
                 ++_node->strong;
                 return Gc<A>(_value, _node);

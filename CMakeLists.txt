@@ -24,8 +24,6 @@ set( BACON_GC_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bacon_gc )
 
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
-find_package( Boost REQUIRED )
-
 set(BACON_GC_INCLUDE_FILES
     ${BACON_GC_BASE_DIR}/gc.h
     )
@@ -39,7 +37,7 @@ file(
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include/bacon_gc
     )
 
-include_directories( ${CMAKE_SOURCE_DIR} ${Boost_INCLUDE_DIR} )
+include_directories( ${CMAKE_SOURCE_DIR} )
 
 set( ALL_SOURCES ${BACON_GC_INCLUDE_FILES} ${BACON_GC_SOURCE_FILES} )
 

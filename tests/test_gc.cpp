@@ -1,6 +1,5 @@
 #include "test_gc.h"
 #include <bacon_gc/gc.h>
-#include <boost/optional.hpp>
 
 #include <cppunit/ui/text/TestRunner.h>
 #include <stdio.h>
@@ -8,7 +7,6 @@
 #include <iostream>
 
 using namespace std;
-using namespace boost;
 using namespace bacon_gc;
 
 void test_sodium::tearDown()
@@ -19,7 +17,7 @@ void test_sodium::tearDown()
 static int my_obj_1_count = 0;
 
 struct MyObj1 {
-    optional<Gc<MyObj1>> next;
+    Gc<MyObj1> next;
 
     MyObj1() {
         ++my_obj_1_count;
@@ -36,7 +34,7 @@ namespace bacon_gc {
         template <typename F>
         static void trace(const MyObj1& a, F&& k) {
             if (a.next) {
-                k(a.next.value().__node());
+                Trace<Gc<MyObj1>>::trace(a.next, k);
             }
         }
     };
@@ -46,7 +44,7 @@ static int my_obj_2_count = 0;
 static int my_obj_2_finalize_count = 0;
 
 struct MyObj2 {
-    optional<Gc<MyObj2>> next;
+    Gc<MyObj2> next;
     int val;
 
     MyObj2(): val(0) {
@@ -64,7 +62,7 @@ namespace bacon_gc {
         template <typename F>
         static void trace(const MyObj2& a, F&& k) {
             if (a.next) {
-                k(a.next.value().__node());
+                Trace<Gc<MyObj2>>::trace(a.next, k);
             }
         }
     };
@@ -72,7 +70,7 @@ namespace bacon_gc {
     template <>
     struct Finalize<MyObj2> {
         static void finalize(MyObj2& a) {
-            a.next.value().value().val++;
+            a.next->val++;
             ++my_obj_2_finalize_count;
         }
     };

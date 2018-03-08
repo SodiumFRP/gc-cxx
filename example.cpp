@@ -1,15 +1,13 @@
-#include "gc.h"
+#include "bacon_gc/gc.h"
 #include <iostream>
-#include <experimental/optional>
 
 using namespace std;
-using namespace std::experimental;
 using namespace bacon_gc;
 
 static int my_obj_1_count = 0;
 
 struct MyObj1 {
-    optional<Gc<MyObj1>> next;
+    Gc<MyObj1> next;
 
     MyObj1() {
         ++my_obj_1_count;
@@ -26,7 +24,7 @@ namespace bacon_gc {
         template <typename F>
         static void trace(const MyObj1& a, F&& k) {
             if (a.next) {
-                k(a.next.value().__node());
+                Trace<Gc<MyObj1>>::trace(a.next, k);
             }
         }
     };
