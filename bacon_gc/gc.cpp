@@ -91,7 +91,12 @@ namespace bacon_gc {
     }
 
     static void system_free(Node* s) {
-        assert(s->strong == 0 && s->weak > 0);
+        if (s->weak == 0) {
+            // Sometimes destructors of cycled objects being freed can still get here.
+            // Just bail if the weak count is zero.
+            return;
+        }
+        assert(s->strong == 0);
         s->cleanup();
         if (s->weak > 0) {
             --s->weak;
@@ -122,9 +127,9 @@ namespace bacon_gc {
                 delete *it;
             }
             ctx.delete_next_cycle.clear();
-            if (ctx.collecting_cycles) {
-                return true;
-            }
+            //if (ctx.collecting_cycles) {
+            //    return true;
+            //}
             ctx.collecting_cycles = true;
             return false;
         });
