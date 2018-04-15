@@ -183,7 +183,7 @@ namespace bacon_gc {
             return _value;
         }
 
-        GcWeak<A>&& downgrade() const {
+        GcWeak<A> downgrade() const {
             return GcWeak<A>(*this);
         }
 
